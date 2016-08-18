@@ -50,7 +50,6 @@ public class Test {
     }
 
     public String checkLogin(String userName,String password){
-        System.out.println("userName:"+userName+"  "+"passwd:"+password);
         if(userName.equals("xuyuanjia") && password.equals("123456"))
             return "xuyuanjia";
         return "";
