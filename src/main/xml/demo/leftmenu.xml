@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menu layout="vertical" tablename="menu_list" >
+    <property name="title" ref="title"></property>
+    <property name="icon" ref="icon"></property>
+    <property name="coll" ref="coll"></property>
+    <property name="target" ref="xml_path"></property>
+</menu>

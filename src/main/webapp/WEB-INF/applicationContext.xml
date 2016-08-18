@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+    <context:component-scan base-package="cn.edu.nwpu.xyj"></context:component-scan>
+    <mvc:annotation-driven></mvc:annotation-driven>
+    <mvc:default-servlet-handler ></mvc:default-servlet-handler>
+
+    <!--
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass"
+                  value="org.springframework.web.servlet.view.JstlView" />
+        <property name="prefix" value="/WEB-INF/views" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+    -->
+        <!-- dataSource for MySQL -->
+        <bean id="dataSource"
+              class="org.apache.commons.dbcp.BasicDataSource"
+              destroy-method="close">
+            <property name="driverClassName"
+                      value="com.mysql.jdbc.Driver" />
+            <property name="url"
+                      value="jdbc:mysql://10.13.32.70:3306/test" />
+            <property name="username" value="root" />
+            <property name="password" value="root" />
+        </bean>
+
+        <bean id = "TransactionManager"
+              class = "org.springframework.jdbc.datasource.DataSourceTransactionManager">
+            <property name = "dataSource" ref="dataSource"/>
+        </bean>
+
+        <!--1:配置一个JdbcTemplate实例，并将这个“共享的”，“安全的”实例注入到不同的DAO类中去-->
+        <bean id = "jdbcTemplate"
+              class = "org.springframework.jdbc.core.JdbcTemplate">
+            <property name = "dataSource" ref="dataSource"/>
+        </bean>
+        <!--
+        <bean id = "BasicDao"
+              class = "cn.edu.nwpu.xyj.sql.dao.BasicDao">
+            <property name="jdbcTemplate" ref="jdbcTemplate"/>
+        </bean>
+        -->
+        <!--2:将共享的DataSource实例注入到DAO中，JdbcTemplate实例在DataSource的setter方法中被创建-->
+
+        <!--利用了拦截器的原理。-->
+        <bean id="transactionInterceptor"
+              class="org.springframework.transaction.interceptor.TransactionInterceptor">
+            <property name="transactionManager">
+                <ref   bean="TransactionManager" />
+            </property>
+            <!-- 配置事务属性 -->
+            <property name="transactionAttributes">
+                <props>
+                    <prop key="delete*">PROPAGATION_REQUIRED</prop>
+                    <prop key="operate*">PROPAGATION_REQUIRED,-Exception</prop>
+                    <prop key="insert*">PROPAGATION_REQUIRED,-Exception</prop>
+                    <prop key="update*">PROPAGATION_REQUIRED,-Exception</prop>
+                    <prop key="save*">PROPAGATION_REQUIRED</prop>
+                    <prop key="find*">PROPAGATION_REQUIRED,readOnly</prop>
+                </props>
+            </property>
+        </bean>
+        <bean id="txProxy"
+              class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+            <property name="beanNames">
+                <list>
+                    <value>*Dao*</value><!--只是为了测试，一般为service-->
+                </list>
+            </property>
+            <property name="interceptorNames">
+                <list>
+                    <value>transactionInterceptor</value>
+                </list>
+            </property>
+        </bean>
+</beans>

@@ -1,0 +1,12 @@
+<window type="tree" tablename="district" level="1,2,3,4,5,6">
+    <column name="title" ref="title"></column>
+    <column name="icon" ref="icon"></column>
+    <column name="coll" ref="coll"></column>
+    <column name="property1" ref="property1"></column>
+    <result type="right_click">
+        <window src=""></window>
+    </result>
+    <result type="db_click">
+        <window src=""></window>
+    </result>
+</window>

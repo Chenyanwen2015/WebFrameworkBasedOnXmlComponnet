@@ -1,0 +1,109 @@
+<window layout="vertical" title="selectdistrict" icon="/demo/select.icon" name="root">
+    <form layout="vertical" title="单位管理员项目审核" style="./css/login.css" name="select_form2">
+        <list label="项目阶段" name="project_period" >
+            <store>
+                <row-list>
+                    <row label="申报" value="0"></row>
+                    <row label="立项" value="1"></row>
+                    <row label="验收" value="2"></row>
+                    <row label="报奖" value="3"></row>
+                </row-list>
+            </store>
+            <change>
+                <load>
+                    <define-store name="project_status1" view="unit_administrator_statuses"></define-store>
+                </load>
+            </change>
+        </list>
+        <list label="项目状态" required="true" name="project_status1"  >
+            <store name="project_status1"></store>
+                <change>
+                    <load>
+                        <define-store view="project_list" name="project_lists"></define-store>
+                    </load>
+                    <load value="2">
+                        <define-store name="project_status2">
+                            <row-list>
+                                <row label="同意" value="0"></row>
+                            </row-list>
+                        </define-store>
+                    </load>
+                    <load value="0,1">
+                        <define-store name="project_status2">
+                            <row-list>
+                                <row label="同意" value="0"></row>
+                                <row label="拒绝" value="1"></row>
+                            </row-list>
+                        </define-store>
+                    </load>
+                </change>
+        </list>
+
+        <list label="符合状态的项目" required="true" name="project_list"  >
+            <store name="project_lists">
+            </store>
+        </list>
+        <list label="审批状态" required="true" name="project_status2"  >
+            <store name="project_status2">
+            </store>
+        </list>
+        <text-area label="审批意见" required="true" name="project_comments"  >
+        </text-area>
+        <button label="提交审核" name="submit">
+            <save view="project_check"></save>
+        </button>
+    </form>
+
+    <form layout="vertical" title="view方式" style="./css/login.css" name="select_form2">
+        <list label="国家" name="country" >
+            <store view="t_country" >
+            </store>
+        </list>
+        <list label="省份" required="true" name="province"  >
+            <store value="t_province">
+            </store>
+            <receive-event value="change">
+                <load>
+                    <store view="t_province">t_province</store>
+                </load>
+            </receive-event>
+        </list>
+    </form>
+
+    <form layout="vertical" title="最简配置" style="./css/login.css" name="select_form4">
+        <list label="国家" name="country" method="Test.getCountry">
+            <change>
+                <load store-name="currentProvince" ></load>
+            </change>
+        </list>
+        <list label="省份" required="true" name="province" >
+            <store name="currentProvince" method="Test.getProvinceByCountry"></store>
+        </list>
+    </form>
+
+
+    <form layout="vertical" title="最简配置" style="./css/login.css" name="select_form4">
+        <list label="国家" name="country" method="Test.getCountry">
+        </list>
+        <list label="省份" required="true" name="province" >
+            <store name="currentProvince" method="Test.getProvinceByCountry">
+                <params>
+                    <param key="d_parent" target="$country"></param>
+                </params>
+            </store>
+        </list>
+    </form>
+
+    <form layout="vertical" title="最简配置" style="./css/login.css" name="select_form4">
+       <lists type="1">
+           <list label="国家" name="country" >
+               <store method="Test.getAllCountry">
+               </store>
+           </list>
+           <list label="省份" required="true" name="province" >
+               <store method="Test.getProvinceByCountry">
+               </store>
+           </list>
+       </lists>
+    </form>
+</window>

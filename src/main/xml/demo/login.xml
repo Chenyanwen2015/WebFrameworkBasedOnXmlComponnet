@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window layout="border" title="请您登陆" icon="/demo/login.icon" name="root">
+    <package base="(cn.edu.nwpu.xyj.test )or (test)"></package>
+    <!--登陆的界面，输入用户名，密码和身份，可以重置以及显示登陆按钮-->
+    <form layout="vertical" title="输入用户名和密码" style="./css/login.css" name="login_form">
+        <email tip="邮箱" name="user_name" regex="*@*"></email>
+        <password tip="密码" name="password" minlength="6" maxlength="20"></password>
+        <text-box tip="备注" name="comment" minlength="10" maxlength="100"></text-box>
+        <!--source直接是静态的-->
+        <radio tip="身份" required="true" name="utype" enter="login">
+            <row label="管理员" value="0"></row>
+            <row label="系统管理员" value="1"></row>
+            <row label="医师" value="2"></row>
+            <row label="药师" value="3"></row>
+        </radio>
+        <layout oriention="horizontal">
+            <reset tip="重置">
+            </reset>
+            <submit tip="登录" name="login">
+                <if expr="user_name==checkLogin(user_name,password)">
+                    <assign expr="userName=Test.getName()"></assign>
+                    <assign expr="userRole=Test.getRole()"></assign>
+                    <redirect content="/demo/frame.xml"></redirect>
+                </if>
+                <else>
+                    <alert content="用户名或者密码错误，请重新输入！"></alert>
+                </else>
+            </submit>
+        </layout>
+    </form>
+        <!--source是数据库表，查询限制条件-->
+    <form layout="vertical" title="标签之间的联动-联动下拉菜单-静态配置" style="./css/login.css" name="select_form1">
+    <list tip="国家" name="country" >
+        <row label="中国" value="0"></row>
+        <row label="美国" value="1"></row>
+    </list>
+        <!--source是文件-->
+        <list tip="省份" required="true" name="country" dependency="$country" trigger-event="change" trigger-action="$this.load()">
+            <row-list>
+                <row label="北京" value="0"></row>
+                <row label="河北" value="1"></row>
+                <row label="河南" value="2"></row>
+                <row label="陕西" value="3"></row>
+            </row-list>
+            <row-list>
+                <row label="texas" value="0"></row>
+                <row label="California" value="1"></row>
+                <row label="Virgiia" value="2"></row>
+                <row label="Lasvagas" value="3"></row>
+            </row-list>
+        </list>
+        <!--source是java方法-->
+    <list tip="省份" required="true" name="province"  method="Test.getProvByCountry($country)"></list>
+
+        <!--source是 查询条件，触发外部的组件-->
+        <list tip="省份" name="province"  table="district"
+              condition="level = 1 and parent = $root.login_form.country"></list>
+    </form>
+
+    <form layout="vertical" title="标签之间的联动-联动下拉菜单-数据库表" style="./css/login.css" name="select_form2">
+        <list tip="国家" name="country" table="t_district" condition="d_level=0" row-label="t_label" row-value="t_value">
+        </list>
+
+        <list tip="省份" required="true" name="country" dependency="$country" trigger-event="change" trigger-action="$this.load()"
+              table="t_district" condition="d_level=1 and d_parent=$country" row-label="t_label" row-value="t_value">
+        </list>
+    </form>
+
+    <form layout="vertical" title="标签之间的联动-联动下拉菜单-数据库表" style="./css/login.css" name="select_form2">
+        <list tip="国家" name="country" view="t_district" >
+            <params>
+                <param key="level" value="0"></param>
+            </params>
+        </list>
+
+        <list tip="省份" required="true" name="province" load-by-change="$country" view="t_district" >
+            <params>
+                <param key="level" value="1"></param>
+                <param key="d_parent" target="$country"></param>
+            </params>
+        </list>
+    </form>
+
+    <form layout="vertical" title="标签之间的联动-联动下拉菜单-自定义方法" style="./css/login.css" name="select_form5">
+        <list tip="国家" name="country" method="Test.getDistrict">
+            <params>
+                <param key="level" value="0"></param>
+            </params>
+        </list>
+        <list tip="省份" required="true" name="province"  method="Test.getDistrict">
+            <params>
+                <param key="level" value="1"></param>
+                <param key="d_parent" target="$country"></param>
+            </params>
+        </list>
+    </form>
+
+    <form layout="vertical" title="标签之间的联动-联动下拉菜单-json文件" style="./css/login.css" name="select_form3">
+        <list tip="国家" name="country" file="file_district" condition="file_level=0"
+              row-label="json_label" row-value="json_value">
+        </list>
+        <list tip="省份" required="true" name="country" dependency="$country" trigger-event="change" trigger-action="$this.load()"
+              file="file_district" condition="file_level=1 and file_parent=$country" row-label="json_label" row-value="json_value">
+        </list>
+    </form>
+
+    <form layout="vertical" title="标签之间的联动-联动下拉菜单-第三方http服务" style="./css/login.css" name="select_form4">
+        <list tip="国家" name="country" address="http://www.nputc.cn/getAllDsitrict.action"
+            root="country"  row-label="json_label" row-value="json_value">
+        </list>
+        <list tip="省份" required="true" name="country" root="province"  row-label="json_label" row-value="json_value">
+            <dependency target="$country" trigger-action="$this.load()" trigger-event="change"
+                        address="http://www.nputc.cn/getAllContacts.action?h_parent=$country&h_level=1">
+            </dependency>
+        </list>
+    </form>
+
+    <form layout="vertical" title="标签之间的联动-联动下拉菜单-自定义方法" style="./css/login.css" name="select_form5">
+        <list tip="国家" name="country" method="Test.getDistrict(0)">
+        </list>
+        <list tip="省份" required="true" name="country" dependency="$country" trigger-event="change" trigger-action="$this.load()"
+              method="Test.getDistrict(1,$country)">
+        </list>
+    </form>
+
+    <form layout="vertical" title="标签之间的联动-联动下拉菜单-form内部主动通信" style="./css/login.css" name="select_form6">
+        <text tip="学生号" name="user_no" length="10" change="$select_form6.load()"
+              table="t_student" condition="t_id=$user_no"></text>
+        <text tip="姓名" name="user_name" length="10" ></text>
+        <text tip="年级" name="user_grade" length="10" ></text>
+        <number tip="年龄" name="user_age" length="10"></number>
+    </form>
+
+    <form layout="vertical" title="标签之间的联动-联动下拉菜单-form内部主动通信" style="./css/login.css" name="select_form6">
+        <text tip="学生号" name="user_no" length="10" >
+            <change action="$select_form6.load()"  table="t_student" condition="t_id=$user_no"></change>
+            <dbclick action="$stu_table.show()"></dbclick>
+        </text>
+        <text tip="姓名" name="user_name" length="10" readOnly="true"></text>
+        <text tip="年级" name="user_grade" length="10" ></text>
+        <number tip="年龄" name="user_age" length="10"></number>
+    </form>
+
+    <menu layout="vertical" tablename="menu_list" level="1,2">
+        <properties>
+            <property name="title" ref="title">
+                <hover action="tipWait()"></hover>
+            </property>
+            <property name="icon" ref="icon"></property>
+            <property name="coll" ref="coll"></property>
+            <property name="target" ref="xml_path"></property>
+        </properties>
+    </menu>
+
+    <menu layout="vertical" tablename="menu_list" level="1,2">
+        <sub-list title="系统管理" icon="sys.icon" coll="add.png,sub.png">
+            <row title="用户管理" icon="person.icon" target="$person_manager"></row>
+            <row title="设备管理" icon="manu.icon" target="$manufacture_manager"></row>
+        </sub-list>
+        <sub-list title="联系人管理" icon="person.icon" coll="add.png,sub.png">
+            <row title="短信模板" icon="sms.icon" target="$sms_manager"></row>
+            <row title="管理联系人" icon="person.icon" target="$sms_contacts"></row>
+            <row title="发送短信" icon="sender.icon" target="$sms_sender"></row>
+        </sub-list>
+    </menu>
+
+    <table tablename="user_info" pages="10,20,30" bar-action="insert;delete;update" bar-type="top" exprot="pdf;excel">
+        <columns>
+            <column name="学号" ref="id"></column>
+            <column name="姓名" ref="name"></column>
+            <column name="年龄" ref="age"></column>
+            <column name="单位" ref="unit"></column>
+            <column name="学历" ref="degree"></column>
+            <column name="性别" ref="gender"></column>
+        </columns>
+        <insert target="$user_info_insert"></insert>
+        <update target="$user_info_update"></update>
+    </table>
+
+    <layout oriention="vertical">
+        <form layout="horizontal" title="form与table的通信" style="./css/login.css" name="search_stu_form">
+            <text tip="学历" name="user_degree" length="10" ></text>
+            <text tip="姓名" name="user_name" length="10" readOnly="true"></text>
+            <submit tip="查找" name="search">
+                <!--<click action="$user_info.load()"></click>-->
+            </submit>
+        </form>
+
+        <table tablename="user_info" pages="10,20,30" bar-action="insert;delete;update" bar-type="top" exprot="pdf;excel">
+            <columns>
+                <column name="学号" ref="id"></column>
+                <column name="姓名" ref="name"></column>
+                <column name="年龄" ref="age"></column>
+                <column name="单位" ref="unit"></column>
+                <column name="学历" ref="degree"></column>
+                <column name="性别" ref="gender"></column>
+            </columns>
+            <params>
+                <param target="$search_stu_form.user_degree"></param>
+                <param target="$search_stu_form.user_name"></param>
+            </params>
+            <dependency target="search_stu_form" trigger-action="$this.load()" trigger-event="search.change"></dependency>
+        </table>
+    </layout>
+
+    <layout oriention="vertical">
+        <form layout="horizontal" title="form_tree" style="./css/login.css" name="tree_stu_form">
+            <dependency target="contacts_tree" trigger-action="dbclick" trigger-event="this.load()"></dependency>
+            <text tip="联系人编号" name="user_degree" length="10" >
+                <click action="$contacts_tree.show()"></click>
+            </text>
+            <text tip="姓名" name="user_name" length="10" readOnly="true"></text>
+            <text tip="姓名" name="user_name" length="10" ></text>
+            <text tip="年级" name="user_grade" length="10" ></text>
+            <number tip="年龄" name="user_age" length="10"></number>
+        </form>
+
+        <tree tablename="contacts_tree" lazy-load="true" position="jump" level="1,2,3,4,5">
+            <properties>
+                <property name="title" ref="title">
+                </property>
+                <property name="icon" ref="icon"></property>
+                <property name="coll" ref="coll"></property>
+                <property name="target" ref="xml_path"></property>
+            </properties>
+        </tree>
+    </layout>
+
+    <tree tablename="district_tree" lazy-load="true" position="jump" level="1,2">
+        <properties>
+            <property name="title" ref="title">
+            </property>
+            <property name="icon" ref="icon"></property>
+            <property name="coll" ref="coll"></property>
+            <property name="target" ref="xml_path"></property>
+        </properties>
+        <left-mouse-menu level="1">
+            <item title="添加省份" target="$addProv"></item>
+        </left-mouse-menu>
+        <left-mouse-menu level="2">
+            <item title="添加市与地区" target="$addCity"></item>
+            <item title="删除当前省份" target="$removeCity"></item>
+        </left-mouse-menu>
+    </tree>
+</window>

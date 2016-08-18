@@ -1,0 +1,310 @@
+<screen layout="border" style="main.css">
+    <window layout="vertical" position="top" style="top.css">
+        <paragraph value="设施农业管理系统" class="defaultTitle.css"></paragraph>
+        <layout oriention="horizontal" >
+            <button label="关闭当前" icon="close.png">
+                <click >
+                    <send-event value="close_current"></send-event>
+                </click>
+            </button>
+            <button label="关闭所有" icon="closeAll.png">
+                <click>
+                    <send-event value="close_all"></send-event>
+                </click>
+            </button>
+            <button label="欢迎您：#userName ！" oriention="right" icon="closeAll.png">
+            </button>
+        </layout>
+    </window>
+    <window layout="fit" position="left">
+        <collapse-menu layout="vertical">
+            <sub-menu title="系统管理" icon="sys.icon" coll="add.png,sub.png">
+                <row title="用户管理" icon="person.icon" target="$person_manager"></row>
+                <row title="设备管理" icon="manu.icon" target="$manufacture_manager"></row>
+            </sub-menu>
+            <sub-menu title="联系人管理" icon="person.icon" coll="add.png,sub.png">
+                <row title="短信模板" icon="sms.icon" target="$sms_manager"></row>
+                <row title="管理联系人" icon="person.icon" target="$sms_contacts"></row>
+                <row title="发送短信" icon="sender.icon" target="$sms_sender"></row>
+            </sub-menu>
+        </collapse-menu>
+    </window>
+    <window layout="card" card-type="removable" position="center" name="window-main" >
+        <receive-event value="close_current">
+            <close-active></close-active>
+        </receive-event>
+        <receive-event value="close_all">
+            <close-all></close-all>
+        </receive-event>
+        <window layout="vertical" style="top.css" default-show="true" closeable="false">
+            <paragraph value="请点击左侧菜单操作" style="defaultShow.css"></paragraph>
+            <picture url="./welcome.png" style="pic.css"></picture>
+        </window>
+        <window name="sms_sender" layout="horizontal" title="发送短信界面" cols="30% 70%">
+            <layout oriention="card" children-show="fix">
+                <tree title="选择联系人">
+                    <store view="contacts_tree" ></store>
+                    <properties>
+                        <property name="title" ref="title">
+                        </property>
+                        <property name="icon" ref="icon"></property>
+                        <property name="coll" ref="coll"></property>
+                    </properties>
+                    <dbclick level="3" >
+                            <send-event value="contacts_tree_dbclick"></send-event>
+                    </dbclick>
+                </tree>
+                <layout oriention="vertical" rows="90% 10%">
+                    <table select="multiple" name="smsTypes">
+                        <store view="data_types" ></store>
+                        <columns>
+                            <column name="编号" ref="id"></column>
+                            <column name="中文类型" ref="chinese_type"></column>
+                            <column name="英文类型" ref="english_type"></column>
+                            <column name="计量单位单位" ref="per"></column>
+                        </columns>
+                        <select>
+                            <send-event value="selected">
+                            </send-event>
+                        </select>
+                    </table>
+                        <button label="确定添加">
+                            <dbclick>
+                            <receive-event value="selected">
+                                <send-event value="addType">
+                                </send-event>
+                            </receive-event>
+                            <message-box content="您选择的类别有：$smsTypes.chinese_type">
+                            </message-box>
+                        </dbclick>
+                        </button>
+                </layout>
+            </layout>
+            <form layout="vertical" title="发送短信" name="select_form6">
+                <text label="选择联系人" name="sms_contacts" length="10" readOnly="true">
+                    <receive-event value="contacts_tree_dbclick">
+                        <text-append></text-append>
+                    </receive-event>
+                </text>
+                <text label="选择发送类型" name="sms_types" length="10" readOnly="true">
+                    <receive-event value="addType">
+                        <text-append event-value="selected"></text-append>
+                    </receive-event>
+                </text>
+                <text-box label="备注信息" name="user_grade" length="10">
+                    <enter method="Test.sendSMS"></enter>
+                </text-box>
+                <button label="发送短信" icon="send.png" name="submit_sms">
+                    <click method="Test.sendSMS"></click>
+                </button>
+            </form>
+        </window>
+        <window name="$person_manager" layout="vertical">
+            <define-store view="user_info" name="user_info"></define-store>
+            <form layout="table" columns="3" title="用户基本信息管理" name="select_form6">
+                <text label="用户名" name="user_name" minlength="10" maxlength="20"></text>
+                <email label="邮箱" name="user_mail" regex="*@*"></email>
+                <password label="密码" name="user password" minlength="6" maxlength="20"></password>
+                <list label="角色" required="true" name="user_role" enter="login" editable="false">
+                    <row label="系统管理员" value="0"></row>
+                    <row label="一般管理员" value="1"></row>
+                    <row label="客户" value="2"></row>
+                </list>
+                <text label="备注" name="comment" minlength="10" maxlength="100" colspan="2"></text>
+                <button label="添加用户" icon="send.png" name="save_user">
+                    <click>
+                        <save store-name="user_info"></save>
+                        <load>
+                           <store name="user_info"></store>
+                        </load>
+                    </click>
+                </button>
+            </form>
+            <layout oriention="horizontal" >
+                <form display="none" layout="table" columns="3" title="用户基本信息更新" name="form_user_update">
+                    <text label="id" name="user_name" display="none"></text>
+                    <text label="用户名" name="user_name" minlength="10" maxlength="20" readOnly="true"></text>
+                    <email label="邮箱" name="user_mail" regex="*@*"></email>
+                    <password label="密码" name="user_password" minlength="6" maxlength="20"></password>
+                    <list label="角色" required="true" name="user_role" editable="false" readOnly="true">
+                        <rows>
+                            <row label="系统管理员" value="0"></row>
+                            <row label="一般管理员" value="1"></row>
+                            <row label="客户" value="2"></row>
+                        </rows>
+                        <enter target="save_user"></enter>
+                    </list>
+                    <button label="更新基本用户信息" icon="send.png" name="save_user">
+                        <click>
+                            <update store-name="user_info"></update>
+                            <!--<load store-name="user_info"></load>-->
+                        </click>
+                    </button>
+                    <receive-event value="show_update_person">
+                        <reset-dialgue-box></reset-dialgue-box>
+                    </receive-event>
+                </form>
+                <!--如果未选择列表的用户信息需要提示-->
+                <button label="更新用户信息" icon="update.png">
+                    <click >
+                        <!--默认遮挡，后排无法点击plain="true"-->
+                        <!--<dialgue-box from="$table_user_info" target="$form_user_update"></dialgue-box>-->
+                        <!--<load store-name="user_info"></load>-->
+                        <receive-event value="selected_person">
+                            <send-event value="show_update_person"></send-event>
+                        </receive-event>
+                    </click>
+                </button>
+                <button label="删除用户信息" icon="delete.png">
+                    <click>
+                        <receive-event value="selected_person">
+                            <delete></delete>
+                        </receive-event>
+                        <!--<load store-name="user_info"></load>-->
+                    </click>
+                </button>
+                <button label="刷新列表" icon="refresh.png">
+                    <click>
+                        <load store-name="user_info"></load>
+                    </click>
+                </button>
+                <button label="缩略图" icon="refresh.png">
+                </button>
+            </layout>
+            <table select="single" name="table_user_info" pages="10,20,30" thumb-nail="true">
+                <store name="user_info"></store>
+                <select>
+                    <send-event value="selected_person">
+                    </send-event>
+                </select>
+                <columns>
+                    <column name="编号" ref="user_id"></column>
+                    <column name="用户名" ref="user_name"></column>
+                    <column name="邮箱" ref="user_mail"></column>
+                    <column name="密码" ref="user_password"></column>
+                    <column name="角色" ref="user_role"></column>
+                </columns>
+            </table>
+        </window>
+        <window layout="horizontal" cols="30% 70%" name="manufacture_manager">
+            <define-store view="Terminals" name="terminal_list" ></define-store>
+            <tree title="终端设备表">
+                <store name="terminal_list" sortable-column="priority"></store>
+                <properties>
+                    <property name="title" ref="title">
+                    </property>
+                    <property name="icon" ref="icon"></property>
+                    <property name="coll" ref="coll"></property>
+                </properties>
+                <form display="none" layout="table" columns="2" title="添加省份" name="form_terminal_save1">
+                    <text label="上级行政区编号" name="parent" minlength="10" maxlength="20" readOnly="true"></text>
+                    <file label="背景图片" name="ter_pic" regex="*.png"></file>
+                    <text label="名称" name="ter_name" minlength="10" maxlength="20" ></text>
+                    <text label="级别" name="level" minlength="10" maxlength="20"></text>
+                    <number label="优先级" name="level" minlength="10" maxlength="20"></number>
+                    <list label="类型" required="true" name="user_role" editable="false">
+                        <rows>
+                            <row label="行政区" value="0"></row>
+                            <row label="终端" value="1"></row>
+                        </rows>
+                    </list>
+                    <button label="确定添加" icon="send.png" name="save_user">
+                        <click >
+                            <!--默认遮挡，后排无法点击plain="true"-->
+                            <save store-name="terminal_list"></save>
+                            <!--<load store-name="user_info"></load>-->
+                        </click>
+                    </button>
+                    <receive-event value="add_rt_current0">
+                        <reset-dialgue-box mapping="id->parent" auto-mapping="false"></reset-dialgue-box>
+                    </receive-event>
+                </form>
+                <form display="none" layout="table" columns="2" title="添加区县" name="form_terminal_save2">
+                    <text label="上级行政区编号" name="parent" minlength="10" maxlength="20" readOnly="true"></text>
+                    <file label="背景图片" name="ter_pic" regex="*.png"></file>
+                    <text label="名称" name="ter_name" minlength="10" maxlength="20" ></text>
+                    <text label="级别" name="level" minlength="10" maxlength="20"></text>
+                    <number label="优先级" name="level" minlength="10" maxlength="20"></number>
+                    <list label="类型" required="true" name="user_role" editable="false">
+                        <rows>
+                            <row label="行政区" value="0"></row>
+                            <row label="终端" value="1"></row>
+                        </rows>
+                    </list>
+                    <button label="确定添加" icon="send.png" name="save_user">
+                        <click >
+                            <!--默认遮挡，后排无法点击plain="true"-->
+                            <save store-name="terminal_list"></save>
+                            <!--<load store-name="user_info"></load>-->
+                        </click>
+                    </button>
+                    <receive-event value="add_rt_current0">
+                        <reset-dialgue-box mapping="id->parent" auto-mapping="false"></reset-dialgue-box>
+                    </receive-event>
+                </form>
+                <form display="none" layout="table" columns="2" title="更新区县" name="form_terminal_update2">
+                    <text label="id" name="id" minlength="10" maxlength="20" readOnly="true"></text>
+                    <text label="上级行政区编号" name="parent" minlength="10" maxlength="20" readOnly="true"></text>
+                    <file label="背景图片" name="ter_pic" regex="*.png"></file>
+                    <text label="名称" name="ter_name" minlength="10" maxlength="20" ></text>
+                    <text label="级别" name="level" minlength="10" maxlength="20"></text>
+                    <number label="优先级" name="level" minlength="10" maxlength="20"></number>
+                    <list tip="类型" required="true" name="user_role" editable="false">
+                        <rows>
+                            <row label="行政区" value="0"></row>
+                            <row label="终端" value="1"></row>
+                        </rows>
+                    </list>
+                    <button label="更新区县" icon="send.png" name="save_user">
+                        <click >
+                            <!--默认遮挡，后排无法点击plain="true"-->
+                            <update store-name="terminal_list"></update>
+                            <!--<load store-name="user_info"></load>-->
+                        </click>
+                    </button>
+                    <receive-event value="update_rt_current1">
+                        <reset-dialgue-box ></reset-dialgue-box>
+                    </receive-event>
+                </form>
+                <rtclick level="0">
+                    <tip-menu layout="vertical">
+                        <row title="添加省份" icon="sms.icon" target="$sms_manager">
+                            <click>
+                                <send-event value="add_rt_current0"></send-event>
+                            </click>
+                        </row>
+                    </tip-menu>
+                </rtclick>
+                <rtclick level="1">
+                    <tip-menu layout="vertical">
+                        <row title="添加区县" icon="sms.icon">
+                            <!--<dialgue-box from="$manufacture_manager" target="$form_terminal_save2" mapping="id->parent" auto-mapping="false"></dialgue-box>-->
+                            <click>
+                                <send-event value="add_rt_current1"></send-event>
+                            </click>
+                        </row>
+                        <row title="更新区县" icon="sms.icon">
+                            <!--<dialgue-box from="$manufacture_manager" target="$form_terminal_save2"></dialgue-box>-->
+                            <click>
+                                <send-event value="update_rt_current1"></send-event>
+                            </click>
+                        </row>
+                </tip-menu>
+                </rtclick>
+            </tree>
+            <table select="single" name="table_terminals" pages="10,20,30" thumb-nail="true">
+                <store name="terminal_list" ></store>
+                <columns>
+                    <column name="编号" ref="ter_no"></column>
+                    <column name="上级行政区编号" ref="parent"></column>
+                    <column name="背景图片" ref="ter_pic"></column>
+                    <column name="名称" ref="ter_name"></column>
+                    <column name="级别" ref="level"></column>
+                    <column name="类型" ref="ter_type"></column>
+                    <column name="优先级" ref="priority"></column>
+                    <column name="备注" ref="ter_role"></column>
+                </columns>
+            </table>
+        </window>
+    </window>
+</screen>
